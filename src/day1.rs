@@ -9,12 +9,12 @@ pub fn generator(input: &str) -> Vec<u32> {
 
 #[aoc(day1, part1)]
 pub fn solve_part1(input: &[u32]) -> usize {
-    input.into_iter().tuple_windows().map(|(a,b)| a < b).filter(|x| *x).count()
+    input.array_windows().filter(|[a,b]| a < b).count()
 }
 
 #[aoc(day1, part2)]
 pub fn solve_part2(input: &[u32]) -> usize {
-    input.into_iter().tuple_windows().map(|(a,b,c)| a + b + c).tuple_windows().map(|(a,b)| a < b).filter(|x| *x).count()
+    input.array_windows().filter(|[a,b,c, d, e, f]| a + b + c < d + e + f).count()
 }
 
 #[cfg(test)]
