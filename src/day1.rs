@@ -14,7 +14,8 @@ pub fn solve_part1(input: &[u32]) -> usize {
 
 #[aoc(day1, part2)]
 pub fn solve_part2(input: &[u32]) -> usize {
-    input.array_windows().filter(|[a,b,c,d]| (a + b + c) < (b + c + d)).count()
+    // lmao you can subtract c + d from both sides
+    input.array_windows().filter(|[a,_, _,d]| a < d).count()
 }
 
 #[cfg(test)]
