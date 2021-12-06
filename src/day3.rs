@@ -1,30 +1,29 @@
+use bitvec::prelude::*;
 use std::ops::Sub;
 use tap::{Pipe, Tap};
 
 /// https://adventofcode.com/2021/day/3
 #[aoc_generator(day3)]
-pub fn generator(input: &str) -> Vec<String> {
+pub fn generator(input: &str) -> Vec<BitVec> {
     input
         .split("\n")
         .map(String::from)
         .filter(|x| !x.is_empty())
+        .map(|x| {
+            x.bytes()
+                .map(|x| if x == '1' as u8 { true } else { false })
+                .collect()
+        })
         .collect()
 }
 
-fn most_common_bits(input: &[String]) -> Vec<bool> {
+fn most_common_bits(input: &[BitVec], len: usize, negate: bool) -> BitVec {
     input
         .into_iter()
-        .fold(vec![0; input[0].len()], |sum, next| {
-            sum.clone()
-                .into_iter()
+        .fold(vec![0; len], |sum, next| {
+            sum.into_iter()
                 .enumerate()
-                .map(|(x, i)| {
-                    i + (if next.as_bytes()[x] == '1' as u8 {
-                        1
-                    } else {
-                        0
-                    })
-                })
+                .map(|(x, i)| i + (if next[x] { 1 } else { 0 }))
                 .collect::<Vec<_>>()
         })
         .into_iter()
@@ -35,14 +34,14 @@ fn most_common_bits(input: &[String]) -> Vec<bool> {
                 y > (input.len() / 2)
             }
         })
-        // .rev()
+        .map(|x| if negate { !x } else { x })
         .collect()
 }
 
 #[aoc(day3, part1)]
-pub fn solve_part1(input: &[String]) -> usize {
+pub fn solve_part1(input: &[BitVec]) -> usize {
     input
-        .pipe(most_common_bits)
+        .pipe(|x| most_common_bits(x, x[0].len(), false))
         .into_iter()
         .rev()
         .enumerate()
@@ -50,85 +49,48 @@ pub fn solve_part1(input: &[String]) -> usize {
         .pipe(|x| x * (!x & 2usize.pow(input[0].len() as u32).sub(1)))
 }
 
-fn recurse(input: Vec<Vec<bool>>, idx: usize, filter: &[bool], negate: bool) -> Vec<Vec<bool>> {
-    fn inner(input: &[Vec<bool>], negate: bool) -> Vec<bool> {
-        input
-            .into_iter()
-            .fold(vec![0; input[0].len()], |sum, next| {
-                sum.clone()
-                    .into_iter()
-                    .enumerate()
-                    .map(|(x, i)| i + (if next[x] { (1) as usize } else { 0 as usize }))
-                    .collect::<Vec<_>>()
-            })
-            .into_iter()
-            .map(|y| {
-                if y * 2 == input.len() {
-                    true
-                } else {
-                    y > (input.len() / 2)
-                }
-            })
-            // .rev()
-            .map(|x| if negate { !x } else { x })
-            .collect::<Vec<bool>>()
-    }
+fn filter_by_matching_bitslice(
+    input: Vec<BitVec>,
+    idx: usize,
+    filter: &BitSlice,
+    negate: bool,
+) -> Vec<BitVec> {
     if input.len() == 1 {
-        // vec![input[0].iter().map(|x| !x).collect()]
         input
     } else {
         input
             .into_iter()
             .filter(|x| x[idx] == filter[idx])
-            .collect::<Vec<Vec<bool>>>()
-            .pipe(|x| recurse(x.clone(), idx + 1, &inner(&x, negate), negate))
+            .collect::<Vec<_>>()
+            .pipe(|x| {
+                filter_by_matching_bitslice(
+                    x.clone(),
+                    idx + 1,
+                    &most_common_bits(&x, x[0].len(), negate),
+                    negate,
+                )
+            })
     }
 }
 
-// fm cp
-
 #[aoc(day3, part2)]
-pub fn solve_part2(input: &[String]) -> usize {
-    fn oxygen(input: &[String]) -> usize {
-        input
-            .into_iter()
-            .map(|x| {
-                x.clone()
-                    .bytes()
-                    .enumerate()
-                    .map(|(x, i)| (if i == '1' as u8 { true } else { false }))
-                    .collect()
-            })
-            .collect::<Vec<Vec<bool>>>()
-            .pipe(|x| recurse(x, 0, &most_common_bits(input), false))[0]
+pub fn solve_part2(input: &[BitVec]) -> usize {
+    fn calc(input: &[BitVec], negate: bool) -> usize {
+        input.pipe(|x| {
+            filter_by_matching_bitslice(
+                x.to_vec(),
+                0,
+                &most_common_bits(input, input[0].len(), negate),
+                negate,
+            )
+        })[0]
             .clone()
             .into_iter()
             .rev()
             .enumerate()
-            .fold(0, |sum, (idx, next)| sum | { ((next as usize) << idx) })
+            .fold(0, |sum, (idx, next)| sum | ((next as usize) << idx))
     }
-
-    fn co2(input: &[String]) -> usize {
-        input
-            .into_iter()
-            .map(|x| {
-                x.clone()
-                    .bytes()
-                    .enumerate()
-                    .map(|(x, i)| (if i == '1' as u8 { true } else { false }))
-                    .collect()
-            })
-            .collect::<Vec<Vec<bool>>>()
-            .pipe(|x| recurse(x, 0, &(most_common_bits(input).into_iter().map(|x| !x).collect::<Vec<_>>()), true))[0]
-            .clone()
-            .into_iter()
-            .rev()
-            .enumerate()
-            .fold(0, |sum, (idx, next)| sum | { ((next as usize) << idx) })
-    }
-
-    oxygen(input) * co2(input)
-    // recurse(
+    calc(input, false) * calc(input, true)
 }
 
 #[cfg(test)]
@@ -180,33 +142,38 @@ mod tests {
     #[test]
     fn test_most_common_bits() {
         {
-            let control = [false, false, false, false, false];
-            let provided = vec!["00000".to_owned()];
-            assert_eq!(control.as_slice(), most_common_bits(&provided).as_slice())
+            let control = bitvec![0, 0, 0, 0, 0];
+            let provided = "00000";
+            assert_eq!(&control, &most_common_bits(&generator(provided), 5, false))
         }
         {
-            let control = [false, false, false, false, true];
-            let provided = ["00000", "00001", "00001"]
-                .into_iter()
-                .map(|x| x.to_string())
-                .collect::<Vec<_>>();
-            assert_eq!(control.as_slice(), most_common_bits(&provided).as_slice())
+            let control = bitvec![0, 0, 0, 0, 1];
+            let provided = "00000\n00001\n00001";
+            assert_eq!(&control, &most_common_bits(&generator(provided), 5, false))
         }
         {
-            let control = [false, true, false, false, true];
-            let provided = ["01000", "01001", "00001"]
-                .into_iter()
-                .map(|x| x.to_string())
-                .collect::<Vec<_>>();
-            assert_eq!(control.as_slice(), most_common_bits(&provided).as_slice())
+            let control = bitvec![0, 1, 0, 0, 1];
+            let provided = "01000\n01001\n00001";
+            assert_eq!(&control, &most_common_bits(&generator(provided), 5, false))
         }
         {
-            let control = [false, true, false, false, true];
-            let provided = ["01000", "01001"]
-                .into_iter()
-                .map(|x| x.to_string())
-                .collect::<Vec<_>>();
-            assert_eq!(control.as_slice(), most_common_bits(&provided).as_slice())
+            let control = bitvec![0, 1, 0, 0, 1];
+            let provided = "01000\n01001";
+            assert_eq!(&control, &most_common_bits(&generator(provided), 5, false))
+        }
+    }
+
+    #[test]
+    fn test_generate() {
+        {
+            let provided = "11111";
+            assert_eq!(vec![bitvec![1, 1, 1, 1, 1]], generator(provided));
+        }
+
+        {
+            // vec[0] is msb
+            let provided = "11110";
+            assert_eq!(vec![bitvec![1, 1, 1, 1, 0]], generator(provided));
         }
     }
 }

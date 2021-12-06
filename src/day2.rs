@@ -3,11 +3,11 @@ use tap::prelude::*;
 
 #[derive(Reformation, Eq, PartialEq, Debug)]
 pub enum Direction {
-    #[reformation(r"forward {}")]
+    #[reformation(r"forward {}", no_regex=true)]
     Forward(i64),
-    #[reformation(r"down {}")]
+    #[reformation(r"down {}", no_regex=true)]
     Down(i64),
-    #[reformation(r"up {}")]
+    #[reformation(r"up {}", no_regex=true)]
     Up(i64),
 }
 

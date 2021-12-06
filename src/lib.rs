@@ -6,6 +6,8 @@ mod day3;
 
 #[macro_use]
 extern crate aoc_runner_derive;
+extern crate tap;
+
 use aoc_runner_derive::aoc_lib;
 
 
