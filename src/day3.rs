@@ -6,9 +6,7 @@ use tap::{Pipe, Tap};
 #[aoc_generator(day3)]
 pub fn generator(input: &str) -> Vec<BitVec> {
     input
-        .split("\n")
-        .map(String::from)
-        .filter(|x| !x.is_empty())
+        .lines()
         .map(|x| {
             x.bytes()
                 .map(|x| if x == '1' as u8 { true } else { false })
