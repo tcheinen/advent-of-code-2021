@@ -45,7 +45,7 @@ pub fn generator(input: &str) -> (Vec<i32>, Vec<Vec<Vec<i32>>>) {
                 .map(String::from)
                 .collect::<Vec<String>>()
                 .join("\n")
-                .trim_left()
+                .trim_start()
                 .split("\n\n")
                 .map(|x| board(x))
                 .collect(),
