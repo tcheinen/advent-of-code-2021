@@ -1,11 +1,13 @@
 use core::str::Split;
 use tap::Pipe;
 
+/// https://adventofcode.com/2021/day/4
+
+
 fn transpose<T>(v: &[Vec<T>]) -> Vec<Vec<T>>
 where
     T: Clone,
 {
-    assert!(!v.is_empty());
     (0..v[0].len())
         .map(|i| v.iter().map(|inner| inner[i].clone()).collect::<Vec<T>>())
         .collect()
@@ -24,7 +26,6 @@ fn win(board: Vec<Vec<i32>>) -> bool {
     check_rows(&board) || check_cols(&board)
 }
 
-/// https://adventofcode.com/2021/day/4
 #[aoc_generator(day4)]
 pub fn generator(input: &str) -> (Vec<i32>, Vec<Vec<Vec<i32>>>) {
     fn board(input: &str) -> Vec<Vec<i32>> {

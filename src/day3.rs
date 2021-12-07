@@ -1,6 +1,6 @@
 use bitvec::prelude::*;
 use std::ops::Sub;
-use tap::{Pipe, Tap};
+use tap::Pipe;
 
 /// https://adventofcode.com/2021/day/3
 #[aoc_generator(day3)]

@@ -1,7 +1,7 @@
 use reformation::Reformation;
 use std::cmp::{max, min};
 use tap::prelude::*;
-/// https://adventofcode.com/2021/day/2
+/// https://adventofcode.com/2021/day/5
 
 #[derive(Reformation, Debug, PartialEq, Eq, Copy, Clone)]
 #[reformation(r"{a} -> {b}")]
@@ -70,7 +70,7 @@ pub fn process_lines(input: &[Line], diagonal: bool) -> Vec<Vec<i64>> {
                     }
                 }
             })
-            .pipe(|_| matrix)
+            .pipe(|()| matrix)
     })
 }
 
