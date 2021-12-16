@@ -234,25 +234,4 @@ gcafb gcf dcaebfg ecagb gf abcdeg gaef cafbge fdbac fegbdc | fgae cfgab fg bagce
         );
     }
 
-    #[test]
-    fn it_solves_mapping() {
-        let provided =
-            "acedgfb cdfbe gcdfa fbcad dab cefabd cdfgeb eafb cagedb ab | cdfeb fcadb cdfeb cdbaf";
-        let correct = "acedgfb: 8
-cdfbe: 5
-gcdfa: 2
-fbcad: 3
-dab: 7
-cefabd: 9
-cdfgeb: 6
-eafb: 4
-cagedb: 0
-ab: 1"
-            .lines()
-            .map(|x| x.split(": ").collect::<Vec<_>>())
-            .map(|x| (x[0], x[1]))
-            .map(|(a, b)| (a.chars().collect::<HashSet<_>>(), b.chars().nth(0).unwrap()))
-            .map(|(a, b)| (b, a))
-            .collect::<HashMap<_, _>>();
-    }
 }
