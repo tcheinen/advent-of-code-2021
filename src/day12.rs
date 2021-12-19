@@ -1,8 +1,7 @@
 use std::collections::HashMap;
-use std::fmt::Formatter;
 use std::hash::Hash;
 
-use dashmap::{DashMap, DashSet};
+use dashmap::DashMap;
 use itertools::Itertools;
 use tap::{Pipe, Tap};
 
@@ -27,7 +26,7 @@ fn frequency<T: Clone + Eq + Hash>(input: Vec<T>) -> HashMap<T, usize> {
                     .or_insert(1)
                     .pipe(|_| ())
             })
-            .pipe(|_| output.clone())
+            .pipe(|_| std::mem::take(output))
     }
     bind(input, &mut HashMap::new())
 }
