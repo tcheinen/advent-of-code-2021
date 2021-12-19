@@ -12,6 +12,7 @@ mod day10;
 mod day11;
 mod day12;
 mod day13;
+mod day14;
 
 
 #[macro_use]
@@ -20,7 +21,29 @@ extern crate tap;
 extern crate dashmap;
 extern crate itertools;
 
+use std::collections::HashMap;
+use std::hash::Hash;
 use aoc_runner_derive::aoc_lib;
-
+use tap::Pipe;
 
 aoc_lib! { year = 2021 }
+
+
+fn frequency<T: Clone + Eq + Hash>(input: Vec<T>) -> HashMap<T, usize> {
+    fn bind<T: Clone + Eq + Hash>(
+        input: Vec<T>,
+        output: &mut HashMap<T, usize>,
+    ) -> HashMap<T, usize> {
+        input
+            .into_iter()
+            .for_each(|x| {
+                output
+                    .entry(x)
+                    .and_modify(|y| *y += 1)
+                    .or_insert(1)
+                    .pipe(|_| ())
+            })
+            .pipe(|_| std::mem::take(output))
+    }
+    bind(input, &mut HashMap::new())
+}

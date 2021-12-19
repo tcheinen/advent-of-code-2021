@@ -4,31 +4,12 @@ use std::hash::Hash;
 use dashmap::DashMap;
 use itertools::Itertools;
 use tap::{Pipe, Tap};
-
+use crate::frequency;
 /// https://adventofcode.com/2021/day/12
 
 #[derive(Debug, Clone, Hash, Eq, PartialEq)]
 pub struct Cave {
     identifier: String,
-}
-
-fn frequency<T: Clone + Eq + Hash>(input: Vec<T>) -> HashMap<T, usize> {
-    fn bind<T: Clone + Eq + Hash>(
-        input: Vec<T>,
-        output: &mut HashMap<T, usize>,
-    ) -> HashMap<T, usize> {
-        input
-            .into_iter()
-            .for_each(|x| {
-                output
-                    .entry(x)
-                    .and_modify(|y| *y += 1)
-                    .or_insert(1)
-                    .pipe(|_| ())
-            })
-            .pipe(|_| std::mem::take(output))
-    }
-    bind(input, &mut HashMap::new())
 }
 
 impl Cave {
