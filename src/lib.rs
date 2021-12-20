@@ -47,3 +47,22 @@ fn frequency<T: Clone + Eq + Hash>(input: Vec<T>) -> HashMap<T, usize> {
     }
     bind(input, &mut HashMap::new())
 }
+
+fn frequence_accumulate<T: Clone + Eq + Hash>(input: Vec<(T, usize)>) -> HashMap<T, usize> {
+    fn bind<T: Clone + Eq + Hash>(
+        input: Vec<(T, usize)>,
+        output: &mut HashMap<T, usize>,
+    ) -> HashMap<T, usize> {
+        input
+            .into_iter()
+            .for_each(|(x, p)| {
+                output
+                    .entry(x)
+                    .and_modify(|y| *y += p)
+                    .or_insert(p)
+                    .pipe(|_| ())
+            })
+            .pipe(|_| std::mem::take(output))
+    }
+    bind(input, &mut HashMap::new())
+}
