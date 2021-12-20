@@ -1,9 +1,9 @@
 use std::collections::HashMap;
-use std::hash::Hash;
+
 use std::str::Split;
 
 use crate::{frequence_accumulate, frequency};
-use dashmap::DashMap;
+
 use itertools::Itertools;
 use tap::{Pipe, Tap};
 
@@ -38,23 +38,9 @@ pub fn generator(input: &str) -> (Vec<char>, HashMap<(char, char), char>) {
 }
 
 fn mutate(
-    mut input: HashMap<(char, char), usize>,
+    input: HashMap<(char, char), usize>,
     polymers: &HashMap<(char, char), char>,
 ) -> HashMap<(char, char), usize> {
-    fn bind(
-        items: impl IntoIterator<Item = ((char, char), usize)>,
-        map: &mut HashMap<(char, char), usize>,
-    ) -> HashMap<(char, char), usize> {
-        items
-            .into_iter()
-            .for_each(|(k, v)| {
-                map.entry(k)
-                    .and_modify(|y| *y += v)
-                    .or_insert(v)
-                    .pipe(|_| ())
-            })
-            .pipe(|_| std::mem::take(map))
-    }
     input
         .iter()
         .flat_map(|(k, v)| {
@@ -69,9 +55,6 @@ fn mutate(
         })
         .collect_vec()
         .pipe(frequence_accumulate)
-    // .tap(|x| println)
-
-    // .pipe(|x| bind(x, &mut HashMap::new()))
 }
 
 fn expand(
@@ -86,7 +69,7 @@ fn expand(
         .pipe(frequency)
         .pipe(|m| (0..number).fold(m, |sum, _| mutate(sum, polymer)))
         .into_iter()
-        .map(|((a, b), c)| (a, c))
+        .map(|((a, _b), c)| (a, c))
         .collect_vec()
         .pipe(frequence_accumulate)
         .tap_mut(|x| {
@@ -100,7 +83,7 @@ fn expand(
 #[aoc(day14, part1)]
 pub fn solve_part1(input: &(Vec<char>, HashMap<(char, char), char>)) -> usize {
     fn inner(count: HashMap<char, usize>) -> usize {
-        count.iter().map(|(a, b)| *b).max().unwrap() - count.iter().map(|(a, b)| *b).min().unwrap()
+        count.iter().map(|(_a, b)| *b).max().unwrap() - count.iter().map(|(_a, b)| *b).min().unwrap()
     }
     expand(input, 10).pipe(inner)
 }
@@ -108,7 +91,7 @@ pub fn solve_part1(input: &(Vec<char>, HashMap<(char, char), char>)) -> usize {
 #[aoc(day14, part2)]
 pub fn solve_part2(input: &(Vec<char>, HashMap<(char, char), char>)) -> usize {
     fn inner(count: HashMap<char, usize>) -> usize {
-        count.iter().map(|(a, b)| *b).max().unwrap() - count.iter().map(|(a, b)| *b).min().unwrap()
+        count.iter().map(|(_a, b)| *b).max().unwrap() - count.iter().map(|(_a, b)| *b).min().unwrap()
     }
     expand(input, 40).pipe(inner)
 }
